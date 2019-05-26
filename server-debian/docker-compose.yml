@@ -1,0 +1,96 @@
+version: '3'
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+#volumes:
+#  git:
+#  db:    
+
+services:
+
+## Traefik ##
+  traefik:
+    image: traefik
+    container_name: "traefik"
+    command: --docker --docker.domain=server.com --docker.watch --web
+#    command: --api --docker
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.backend=traefik"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=Host:traefik.server.com"
+      - "traefik.docker.network=web"
+    restart: always
+
+## PostgreSQL ##
+  postgres:
+    image: postgres:alpine
+    container_name: "postgres"
+    networks:
+      - internal
+    volumes:
+      - "./data/postgresql:/var/lib/postgresql"
+    environment:
+      - "POSTGRES_USER=gogs"
+      - "POSTGRES_PASSWORD=root"
+      - "POSTGRES_DB=gogs"
+    ports:
+      - "5432:5432"
+    labels:
+      - "traefik.enable=false"
+    restart: always  
+  
+## Gogs ##
+  gogs:
+    #image: gogs/gogs:0.11.86
+    image: gogs/gogs
+    container_name: "gogs"
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    volumes:
+      - "./data/gogs:/data"
+    ports:
+      - "10080:3000"  #web
+      - "10022:22"    #ssh
+    networks:
+      - internal
+      - web
+    labels:
+      - "traefik.backend=gogs"
+      - "traefik.port=3000"
+      - "traefik.frontend.rule=Host:gogs.server.com"
+      - "traefik.docker.network=web"
+    restart: always
+
+## Jenkins ##
+  jenkins:
+    image: jenkinsci/blueocean
+    container_name: "jenkins"
+    user: root
+#    ports:
+#      - "8080:8080"
+#      - "50000:50000"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/jenkins:/var/jenkins_home
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=jenkins"
+      - "traefik.port=9003"
+      - "traefik.frontend.rule=Host:jenkins.server.com"
+      - "traefik.docker.network=web"
+    restart: always
