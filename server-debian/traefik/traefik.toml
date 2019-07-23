@@ -1,0 +1,48 @@
+# enable logging on the debug level
+logLevel = "DEBUG"
+
+# log Traefik related stuff. It defaults to logging to stdout
+# to view logs, run the command: docker logs traefik
+[traefikLog]
+
+# log requests. It defaults to logging to stdout
+# the filters are for logging only requests that get certain http status codes, in this case we log everything
+[accessLog]
+  [accessLog.filters]
+    statusCodes = ["0-600"]
+
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+    [entryPoints.traefik]
+        address = ":8080"
+        [entryPoints.traefik.auth]
+            [entryPoints.traefik.auth.basic]
+                users = ["carlos:$apr1$jOhBh0XQ$lwLGqhZaLmsj5Nql/39p3."]    
+
+    [entryPoints.http]
+        address = ":80"
+            [entryPoints.http.redirect]
+                entryPoint = "https"
+    [entryPoints.https]
+        address = ":443"
+            [entryPoints.https.tls]
+
+[api]
+entrypoint="traefik"
+
+[acme]
+email = "carlos@server.com"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+  [acme.httpChallenge]
+  entryPoint = "http"
+
+[docker]
+domain = "server.com"
+watch = true
+network = "web"
+
+
+
