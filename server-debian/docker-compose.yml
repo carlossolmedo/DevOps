@@ -14,7 +14,7 @@ services:
 
 ## Traefik ##
   traefik:
-    image: traefik
+    image: traefik:alpine
     container_name: "traefik"
     command: --docker --docker.domain=server.com --docker.watch --web
 #    command: --api --docker
