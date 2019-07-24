@@ -82,7 +82,7 @@ services:
 
 ## Jenkins ##
   jenkins:
-    image: jenkinsci/blueocean
+    image: jenkins/jenkins:alpine
     container_name: "jenkins"
     user: root
     ports:
