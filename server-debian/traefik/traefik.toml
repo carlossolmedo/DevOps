@@ -31,18 +31,21 @@ defaultEntryPoints = ["http", "https"]
 [api]
 entrypoint="traefik"
 
+# Enable ACME (Let's Encrypt): automatic SSL
 [acme]
+# Email address used for registration
 email = "carlos@server.com"
 storage = "acme.json"
 entryPoint = "https"
-onHostRule = true
-  [acme.httpChallenge]
-  entryPoint = "http"
+OnHostRule = true
 
+[acme.httpChallenge]
+entryPoint = "http"
+
+# Enable Docker configuration backend
 [docker]
+endpoint = "unix:///var/run/docker.sock"
 domain = "server.com"
 watch = true
 network = "web"
-
-
-
+exposedbydefault = true

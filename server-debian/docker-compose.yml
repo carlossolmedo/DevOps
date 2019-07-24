@@ -85,18 +85,19 @@ services:
     image: jenkinsci/blueocean
     container_name: "jenkins"
     user: root
-#    ports:
-#      - "8080:8080"
-#      - "50000:50000"
+    ports:
+      - "8080:8080"
+      - "50000:50000"
     networks:
       - web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/jenkins:/var/jenkins_home
     labels:
+      - "traefik.frontend.entryPoints=http,https"
       - "traefik.enable=true"
       - "traefik.backend=jenkins"
-      - "traefik.port=9003"
+      - "traefik.port=8080"
       - "traefik.frontend.rule=Host:jenkins.server.com"
       - "traefik.docker.network=web"
     restart: always
