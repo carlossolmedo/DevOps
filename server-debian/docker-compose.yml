@@ -14,7 +14,7 @@ services:
 
 ## Traefik ##
   traefik:
-    image: traefik
+    image: traefik:alpine
     container_name: "traefik"
     command: --docker --docker.domain=server.com --docker.watch --web
 #    command: --api --docker
@@ -25,11 +25,14 @@ services:
       - web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.toml:/traefik.toml
+      - ./traefik/acme.json:/acme.json
     labels:
       - "traefik.backend=traefik"
       - "traefik.port=8080"
       - "traefik.frontend.rule=Host:traefik.server.com"
       - "traefik.docker.network=web"
+      - "traefik.enable=true"
     restart: always
 
 ## PostgreSQL ##
@@ -52,7 +55,6 @@ services:
   
 ## Gogs ##
   gogs:
-    #image: gogs/gogs:0.11.86
     image: gogs/gogs
     container_name: "gogs"
     depends_on:
@@ -72,16 +74,17 @@ services:
       - "traefik.port=3000"
       - "traefik.frontend.rule=Host:gogs.server.com"
       - "traefik.docker.network=web"
+      - "traefik.enable=true"
     restart: always
 
 ## Jenkins ##
   jenkins:
-    image: jenkinsci/blueocean
+    image: jenkins/jenkins:alpine
     container_name: "jenkins"
     user: root
-#    ports:
-#      - "8080:8080"
-#      - "50000:50000"
+    ports:
+      - "8080:8080"
+      - "50000:50000"
     networks:
       - web
     volumes:
@@ -90,7 +93,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.backend=jenkins"
-      - "traefik.port=9003"
+      - "traefik.port=8080"
       - "traefik.frontend.rule=Host:jenkins.server.com"
       - "traefik.docker.network=web"
     restart: always
